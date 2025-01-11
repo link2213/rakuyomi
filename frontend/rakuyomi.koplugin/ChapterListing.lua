@@ -238,7 +238,6 @@ function ChapterListing:onMenuChoice(item)
   local chapter = item.chapter
 
   self:openChapterOnReader(chapter)
-  
 end
 
 function ChapterListing:onMenuHold(item, chapters)
