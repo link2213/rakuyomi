@@ -238,7 +238,60 @@ function ChapterListing:onMenuChoice(item)
   local chapter = item.chapter
 
   self:openChapterOnReader(chapter)
+  
 end
+
+function ChapterListing:onMenuHold(item, chapters)
+    local chapter = item.chapter
+    local dialog
+    
+    local function reverseList(list) 
+      local reversedList = {} 
+      local itemCount = #list 
+      for i = itemCount, 1, -1 do 
+        table.insert(reversedList, list[i]) 
+      end 
+      return reversedList 
+    end
+
+    listChapters = reverseList(self.chapters)
+    local buttons = {
+      {
+        {
+          text = Icons.FA_CHECK .. " Mark as read",
+          callback = function()
+            UIManager:close(dialog)
+            local response = Backend.markChapterAsRead(chapter.source_id, chapter.manga_id, chapter.id)
+            self:updateChapterList()
+          end
+        },
+      },
+      {
+        {
+          text = Icons.FA_DOWNLOAD .. " Mark previous as read",
+          callback = function()
+            UIManager:close(dialog)
+            ---loop until the current chapter is found and mark all previous chapters as read
+            for i, ch in ipairs(listChapters) do
+              if ch.id == chapter.id then
+                self:updateChapterList()
+                break
+              end
+              logger.info('Marking chapter as read: ', ch.chapter_num, ch.title)
+              local response = Backend.markChapterAsRead(ch.source_id, ch.manga_id, ch.id)
+            end
+          end
+        }
+      }
+    }
+  
+    dialog = ButtonDialog:new {
+      buttons = buttons,
+    }
+
+    UIManager:show(dialog)
+
+  end  
 
 --- @private
 function ChapterListing:onSwipe(arg, ges_ev)
